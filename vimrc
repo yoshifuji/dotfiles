@@ -12,8 +12,6 @@ set showmatch
 set hlsearch
 set ignorecase
 set smartcase
-set backspace=
-set backspace=indent
 
 set list
 set listchars=tab:>-,trail:^
@@ -68,19 +66,22 @@ map ,jtv <Esc>:'<,'>! jq .<CR>
 filetype plugin on
 
 "=== Vundle
-set rtp+=~/.vim/vundle
-call vundle#rc('~/.vim/bundle')
+set rtp+=~/.vim/vundle.git
+call vundle#rc()
 
 Bundle 'petdance/vim-perl'
 Bundle 'hotchpotch/perldoc-vim'
 Bundle 'Shougo/neocomplcache'
 Bundle 'Shougo/neosnippet'
 Bundle 'Shougo/neosnippet-snippets'
+Bundle 'Shougo/unite.vim'
+Bundle 'Shougo/neomru.vim'
 Bundle 'thinca/vim-quickrun'
 Bundle 'kchmck/vim-coffee-script'
 Bundle 'othree/yajs.vim'
 Bundle 'rhysd/vim-crystal'
 Bundle 'maksimr/vim-jsbeautify'
+Bundle 'soramugi/auto-ctags.vim'
 
 "=== For neocomplcache
 " Disable AutoComplPop.
@@ -89,7 +90,7 @@ let g:acp_enableAtStartup = 0
 let g:neocomplcache_enable_at_startup = 1
 " Use smartcase.
 let g:neocomplcache_enable_smart_case = 1
-" Set minimum syntax keyword length.
+" " Set minimum syntax keyword length.
 let g:neocomplcache_min_syntax_length = 3
 let g:neocomplcache_lock_buffer_name_pattern = '\*ku\*'
 
@@ -106,12 +107,53 @@ inoremap <expr><C-l>     neocomplcache#complete_common_string()
 " <CR>: close popup and save indent.
 inoremap <silent> <CR> <C-r>=<SID>my_cr_function()<CR>
 function! s:my_cr_function()
-  return neocomplcache#smart_close_popup() . "\<CR>"
+    return neocomplcache#smart_close_popup() . "\<CR>"
 endfunction
 " <TAB>: completion.
 inoremap <expr><TAB>  pumvisible() ? "\<C-n>" : "\<TAB>"
 " <C-h>, <BS>: close popup and delete backword char.
-inoremap <expr><C-h> neocomplcache#smart_close_popup()."\<C-h>"
-inoremap <expr><BS> neocomplcache#smart_close_popup()."\<C-h>"
-inoremap <expr><C-y>  neocomplcache#close_popup()
-inoremap <expr><C-e>  neocomplcache#cancel_popup()
+" inoremap <expr><C-h> neocomplcache#smart_close_popup()."\<C-h>"
+" inoremap <expr><BS> neocomplcache#smart_close_popup()."\<C-h>"
+" inoremap <expr><C-y>  neocomplcache#close_popup()
+" inoremap <expr><C-e>  neocomplcache#cancel_popup()
+
+" original key mapping
+let g:auto_ctags = 1
+nnoremap <C-h> :vsp<CR> :exe("tjump ".expand('<cword>'))<CR>
+nnoremap <C-k> :split<CR> :exe("tjump ".expand('<cword>'))<CR>
+
+" quick run
+"-------------------------------------------------
+"初期化
+let g:quickrun_config = {}
+
+"vimproc
+let g:quickrun_config['_'] = {}
+let g:quickrun_config['_']['runner'] = 'vimproc'
+let g:quickrun_config['_']['runner/vimproc/updatetime'] = 100
+
+"prove
+augroup QuickRunProve
+    autocmd!
+    autocmd BufWinEnter,BufNewFile *.t set filetype=perl.unit
+augroup END
+let g:quickrun_config['perl.unit'] = {}
+let g:quickrun_config['perl.unit']['command'] = 'carton'
+let g:quickrun_config['perl.unit']['cmdopt'] = 'exec -- perl -Ilib'
+let g:quickrun_config['perl.unit']['exec'] = '%c %o %s'
+
+"perl debug
+let g:quickrun_config['perl'] = {}
+let g:quickrun_config['perl']['command'] = 'carton'
+let g:quickrun_config['perl']['cmdopt'] = 'exec -- perl -Ilib'
+let g:quickrun_config['perl']['exec'] = '%c %o %s'
+
+" unite.vim
+"-------------------------------------------------
+"call unite#custom_default_action('file', 'tabopen')
+nnoremap <silent> <C-O><C-O> :<C-U>Unite -buffer-name=files file bookmark file/new<CR>
+nnoremap <silent> <C-O><C-F> :<C-U>UniteWithBufferDir -buffer-name=files file bookmark file/new<CR>
+nnoremap <silent> <C-O><C-N> :<C-U>Unite -buffer-name=files file/new<CR>
+nnoremap <silent> <C-O><C-H> :<C-U>Unite -buffer-name=files file_mru<CR>
+nnoremap <silent> <C-O :<C-U>Unite -buffer-name=files file_mru<CR>
+nnoremap <silent> <C-O><C-G> :<C-U>Unite -buffer-name=files buffer<CR>
